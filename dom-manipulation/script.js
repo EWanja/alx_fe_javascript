@@ -1,5 +1,7 @@
+document.addEventListener('DOMContentLoaded', function() {
 const quoteDisplay = document.getElementById('quoteDisplay');
-const quoteButton = document.getElementById(newQuote);
+const quoteButton = document.getElementById("newQuote");
+const addQuoteBtn = document.getElementById("addQuoteBtn")
 
 const quoteObject = [
   { text: "The best way to get started is to quit talking and begin doing.", category: "Motivation" },
@@ -10,10 +12,25 @@ const quoteObject = [
 ];
 
 function showRandomQuote(){
-
+    const randomIndex = Math.floor(Math.random() * quoteObject.length);
+    const quote = quoteObject[randomIndex];
+    document.getElementById("quoteDisplay").innerHTML = `"${quote.text}" <br><em>(${quote.category})</em>`;
 }
 
-function createAddQuoteForm(){
-    
-}
+function addQuote(){
+    const text = document.getElementById("newQuoteText").value;
+    const category = document.getElementById("newQuoteCategory").value;
 
+    if(text && category){
+        quoteObject.push({text, category});
+        document.getElementById("newQuoteText").value = "";
+    document.getElementById("newQuoteCategory").value = "";
+    showRandomQuote()
+}
+}
+    quoteButton.addEventListener("click", showRandomQuote);
+    addQuoteBtn.addEventListener("click", addQuote);
+
+    showRandomQuote();  
+
+});
