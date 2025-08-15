@@ -12,9 +12,20 @@ const quoteObject = [
 ];
 
 function showRandomQuote(){
+    quoteDisplay.innerHTML ="";
+
     const randomIndex = Math.floor(Math.random() * quoteObject.length);
     const quote = quoteObject[randomIndex];
-    document.getElementById("quoteDisplay").innerHTML = `"${quote.text}" <br><em>(${quote.category})</em>`;
+    
+    const quoteText = document.createElement("span");
+    quoteText.textContent = `"${quote.text}" `;
+
+    const quoteCategory = document.createElement("em");
+    quoteCategory.textContent = `(${quote.category})`;
+
+    quoteDisplay.appendChild(quoteText);
+    quoteDisplay.appendChild(document.createElement("br"));
+    quoteDisplay.appendChild(quoteCategory);
 }
 
 function createAddQuoteForm(){
