@@ -38,6 +38,11 @@
     function showRandomQuote(quotes = quoteObject){
     quoteDisplay.innerHTML ="";
 
+    if (!quotes.length) {
+        quoteDisplay.textContent = "No quotes in this category yet.";
+        return;
+    }
+
     const randomIndex = Math.floor(Math.random() * quotes.length);
     const quote = quotes[randomIndex];
     
@@ -137,7 +142,45 @@
     }
     }
 
+    // function to showNotification message
+    function showNotification(message) {
+  const notification = document.getElementById("notification");
+  notification.textContent = message; // Show the message
+  setTimeout(() => {
+    notification.textContent = ""; // Clear it after 3 seconds
+  }, 3000);
+}
+
+    //
+    async function syncWithServer() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+    const serverData = await response.json();
+
     
+    const serverQuotes = serverData.slice(0, 10).map(item => ({
+      text: item.title, 
+      category: "Server" 
+    }));
+
+    // Replace local quotes with server quotes
+    localStorage.setItem("quoteObject", JSON.stringify(serverQuotes));
+
+    // Also update in-memory array and re-render
+    quoteObject.length = 0; // clear existing
+    quoteObject.push(...serverQuotes);
+
+    populateCategories();
+    filterQuotes();
+
+    showNotification("Quotes synced with server!");
+  } catch (error) {
+    showNotification("Failed to sync with server.");
+    console.error(error);
+  }
+}
+
+
 
     //event listeners 
 
