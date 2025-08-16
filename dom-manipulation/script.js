@@ -64,7 +64,7 @@
     if(text && category){
         quoteObject.push({text, category});
 
-        saveQuotesToStorage(quoteObject);
+    saveQuotesToStorag();
 
     document.getElementById("newQuoteText").value = "";
     document.getElementById("newQuoteCategory").value = "";
@@ -72,6 +72,8 @@
     populateCategories()
 
     filterQuotes();
+    sendQuoteToServer({ text, category });
+    syncQuotes();
     }
     }
 
@@ -148,10 +150,10 @@
   notification.textContent = message; // Show the message
   setTimeout(() => {
     notification.textContent = ""; // Clear it after 3 seconds
-  }, 3000);
+  }, 5000);
 }
 
-    //
+    //function to fetch quotes from server
     async function fetchQuotesFromServer() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
@@ -180,7 +182,67 @@
   }
 }
 
+    //send new quote to server
+    async function sendQuoteToServer(quote) {
+    try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+        method: "POST",  
+        headers: {
+            "Content-Type": "application/json" 
+        },
+        body: JSON.stringify(quote)  
+        });
 
+        const result = await response.json();
+        console.log("Quote saved to server:", result);
+
+        showNotification("Quote sent to server!");
+    } catch (error) {
+        console.error("Failed to send quote:", error);
+        showNotification("Failed to send quote to server.");
+    }
+    }
+
+    // sync funtion 
+    async function syncQuotes() {
+  try {
+    // Fetch latest quotes from server
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+    const serverQuotes = await response.json();
+
+    
+    const formattedServerQuotes = serverQuotes.slice(0, 5).map(post => ({
+      text: post.title,
+      category: "Server"
+    }));
+
+    // Get local quotes
+    const localQuotes = JSON.parse(localStorage.getItem("quoteObject")) || [];
+
+    // ---- Conflict Resolution ----
+    // Rule: Server quotes overwrite local if conflict
+    const mergedQuotes = [...localQuotes, ...formattedServerQuotes];
+
+    // Remove duplicates (by text)
+    const uniqueQuotes = Array.from(new Map(mergedQuotes.map(q => [q.text, q])).values());
+
+    // Save merged to localStorage
+    localStorage.setItem("quoteObject", JSON.stringify(uniqueQuotes));
+
+    quoteObject.length = 0;
+    quoteObject.push(...uniqueQuotes);
+
+    populateCategories();
+    filterQuotes();
+
+    // Show notification to user
+    showNotification("Quotes synced with server!");
+
+  } catch (error) {
+    console.error("Sync failed:", error);
+    showNotification("Failed to sync with server.");
+  }
+}
 
     //event listeners 
 
@@ -192,5 +254,8 @@
 
     populateCategories();
     filterQuotes();  
+
+    setInterval(syncQuotes, 30000);
+    syncQuotes();
 
     });
